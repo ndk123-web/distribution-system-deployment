@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Distributed Traffic Control System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e8eaed;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+        }
+
+        .header p {
+            color: #b0b3b8;
+            font-size: 1.1em;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel h2 {
+            color: #4fc3f7;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .traffic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .signal-box {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .signal-light {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            border: 3px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .red { background: #ff4444; color: white; box-shadow: 0 0 20px #ff4444; }
+        .yellow { background: #ffaa00; color: black; box-shadow: 0 0 20px #ffaa00; }
+        .green { background: #44ff44; color: black; box-shadow: 0 0 20px #44ff44; }
+        .unknown { background: #666; color: white; }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select, button, input {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e8eaed;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #29b6f6 0%, #0288d1 100%);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: #b0b3b8;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+
+        .replica-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .replica-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .logs {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .logs textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e8eaed;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .locked {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚦 Combined Distributed Traffic Control System</h1>
+            <p>Traffic Signals • Pedestrian Control • Mutual Exclusion • Deadlock Demo • Replica Consistency</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Traffic Control Panel -->
+            <div class="panel">
+                <h2>🚦 Traffic Control</h2>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Mode:</label>
+                        <select id="modeSelect">
+                            <option value="true">Automatic</option>
+                            <option value="false">Manual</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="manualControls">
+                        <label>Road to GREEN:</label>
+                        <select id="roadSelect">
+                            <option value="1">Road 12</option>
+                            <option value="3">Road 34</option>
+                        </select>
+                        <button id="applyBtn">Apply</button>
+                    </div>
+                </div>
+
+                <div class="traffic-grid">
+                    <div class="signal-box">
+                        <h4>Road 12 Signal</h4>
+                        <div id="signal12" class="signal-light red">RED</div>
+                    </div>
+                    <div class="signal-box">
+                        <h4>Road 34 Signal</h4>
+                        <div id="signal34" class="signal-light green">GREEN</div>
+                    </div>
+                    <div class="signal-box">
+                        <h4>Pedestrian 12</h4>
+                        <div id="ped12" class="signal-light green">GREEN</div>
+                    </div>
+                    <div class="signal-box">
+                        <h4>Pedestrian 34</h4>
+                        <div id="ped34" class="signal-light red">RED</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status Panel -->
+            <div class="panel">
+                <h2>📊 System Status</h2>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Mode</div>
+                        <div class="status-value" id="currentMode">Auto</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Lock Owner</div>
+                        <div class="status-value" id="lockOwner">None</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Signal Lock</div>
+                        <div class="status-value" id="signalLock">Free</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Pedestrian Lock</div>
+                        <div class="status-value" id="pedestrianLock">Free</div>
+                    </div>
+                </div>
+
+                <div class="controls" style="margin-top: 20px;">
+                    <button id="refreshBtn">🔄 Refresh Status</button>
+                    <button id="deadlockBtn" class="warning" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);">
+                        ⚠️ Trigger Deadlock
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Replica Consistency Panel -->
+        <div class="panel">
+            <h2>🔄 Replica Consistency (3 Replicas)</h2>
+            <div class="replica-grid" id="replicaGrid">
+                <!-- Replica status will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="panel logs">
+            <h2>📝 System Logs</h2>
+            <textarea id="logArea" readonly placeholder="System logs will appear here..."></textarea>
+            <button id="clearLogsBtn" style="margin-top: 10px;">Clear Logs</button>
+        </div>
+    </div>
+
+    <script>
+        class TrafficControlClient {
+            constructor() {
+                this.middlewarePort = 4132;
+                this.serviceKey = "TrafficControlSystem";
+                this.logArea = document.getElementById('logArea');
+            }
+
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logMessage = `[${timestamp}] ${message}\n`;
+                this.logArea.value += logMessage;
+                this.logArea.scrollTop = this.logArea.scrollHeight;
+                console.log(message);
+            }
+
+            async request(method, params = {}) {
+                try {
+                    this.log(`🔄 Calling ${method} with params: ${JSON.stringify(params)}`);
+                    
+                    const response = await fetch(`http://localhost:${this.middlewarePort}/api/v1/middleman/middleman-send-request-to-registry`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            method: method,
+                            params: params,
+                            key: this.serviceKey
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.log(`✅ ${method} successful`);
+                        return data.data?.data?.result || data.data?.result || data.result || data;
+                    } else {
+                        this.log(`❌ ${method} failed: ${data.message || 'Unknown error'}`);
+                        return null;
+                    }
+                } catch (error) {
+                    this.log(`💥 ${method} error: ${error.message}`);
+                    return null;
+                }
+            }
+        }
+
+        const client = new TrafficControlClient();
+
+        // UI Elements
+        const elements = {
+            signal12: document.getElementById('signal12'),
+            signal34: document.getElementById('signal34'),
+            ped12: document.getElementById('ped12'),
+            ped34: document.getElementById('ped34'),
+            modeSelect: document.getElementById('modeSelect'),
+            roadSelect: document.getElementById('roadSelect'),
+            applyBtn: document.getElementById('applyBtn'),
+            manualControls: document.getElementById('manualControls'),
+            currentMode: document.getElementById('currentMode'),
+            lockOwner: document.getElementById('lockOwner'),
+            signalLock: document.getElementById('signalLock'),
+            pedestrianLock: document.getElementById('pedestrianLock'),
+            replicaGrid: document.getElementById('replicaGrid'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            deadlockBtn: document.getElementById('deadlockBtn'),
+            clearLogsBtn: document.getElementById('clearLogsBtn'),
+            logArea: document.getElementById('logArea')
+        };
+
+        // Update signal light appearance
+        function updateSignalLight(element, state) {
+            if (!state) state = 'unknown';
+            element.className = `signal-light ${state.toLowerCase()}`;
+            element.textContent = state.toUpperCase();
+        }
+
+        // Update replica display
+        function updateReplicas(replicas) {
+            if (!replicas || !Array.isArray(replicas)) return;
+            
+            elements.replicaGrid.innerHTML = '';
+            replicas.forEach((replica, index) => {
+                const replicaDiv = document.createElement('div');
+                replicaDiv.className = 'replica-item';
+                replicaDiv.innerHTML = `
+                    <strong>Replica ${index + 1}</strong><br>
+                    S12: ${replica.s12}<br>
+                    S34: ${replica.s34}<br>
+                    P12: ${replica.p12}<br>
+                    P34: ${replica.p34}
+                `;
+                elements.replicaGrid.appendChild(replicaDiv);
+            });
+        }
+
+        // Update UI with status data
+        function updateUI(status) {
+            if (!status) return;
+
+            // Update signal lights
+            updateSignalLight(elements.signal12, status.s12);
+            updateSignalLight(elements.signal34, status.s34);
+            updateSignalLight(elements.ped12, status.p12);
+            updateSignalLight(elements.ped34, status.p34);
+
+            // Update mode
+            elements.currentMode.textContent = status.auto ? 'Automatic' : 'Manual';
+            elements.modeSelect.value = status.auto ? 'true' : 'false';
+
+            // Update manual controls visibility
+            elements.manualControls.style.display = status.auto ? 'none' : 'flex';
+            elements.roadSelect.disabled = status.auto;
+            elements.applyBtn.disabled = status.auto;
+
+            // Update lock status
+            elements.lockOwner.textContent = status.lockOwner || 'None';
+            elements.signalLock.textContent = status.signalLocked ? 'Locked' : 'Free';
+            elements.pedestrianLock.textContent = status.pedestrianLocked ? 'Locked' : 'Free';
+
+            // Add visual indication for locks
+            elements.signalLock.className = status.signalLocked ? 'status-value locked' : 'status-value';
+            elements.pedestrianLock.className = status.pedestrianLocked ? 'status-value locked' : 'status-value';
+
+            // Update replicas
+            updateReplicas(status.replicas);
+        }
+
+        // Fetch and update status
+        async function refreshStatus() {
+            const status = await client.request('get_status');
+            if (status) {
+                updateUI(status);
+            }
+        }
+
+        // Event Listeners
+        elements.modeSelect.addEventListener('change', async (e) => {
+            const auto = e.target.value === 'true';
+            await client.request('manual', { auto });
+            await refreshStatus();
+        });
+
+        elements.applyBtn.addEventListener('click', async () => {
+            const roadToGreen = elements.roadSelect.value;
+            await client.request('manual', { auto: false, roadToGreen });
+            await refreshStatus();
+        });
+
+        elements.refreshBtn.addEventListener('click', refreshStatus);
+
+        elements.deadlockBtn.addEventListener('click', async () => {
+            const message = `🚨 DEADLOCK DEMO EXPLANATION:
+
+📖 What happens:
+• Process 1: Gets SIGNAL_LOCK → waits for PEDESTRIAN_LOCK  
+• Process 2: Gets PEDESTRIAN_LOCK → waits for SIGNAL_LOCK
+• Result: Both wait forever (DEADLOCK!)
+
+💡 In real systems, this needs:
+• Lock timeouts
+• Deadlock detection  
+• Lock ordering (acquire in same sequence)
+
+Continue with demo?`;
+            
+            if (confirm(message)) {
+                const result = await client.request('trigger_deadlock');
+                if (result) {
+                    alert(`✅ Deadlock triggered! 
+                    
+Status: ${result.status || 'ACTIVE'}
+Check console logs and system logs for detailed process behavior.`);
+                }
+            }
+        });
+
+        elements.clearLogsBtn.addEventListener('click', () => {
+            elements.logArea.value = '';
+        });
+
+        // Auto-refresh every 2 seconds
+        setInterval(refreshStatus, 2000);
+
+        // Initial load
+        client.log('🚀 Traffic Control System UI initialized');
+        refreshStatus();
+    </script>
+</body>
+</html>
