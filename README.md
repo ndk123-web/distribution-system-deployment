@@ -48,7 +48,7 @@ npx serve . -p 8080
 node client.mjs
 ```
 
-## 🎮 UI Features
+## 🎮 UI Features (RD)
 
 ### Traffic Control Panel
 - **Automatic Mode**: Continuous signal cycling (8-second intervals)
