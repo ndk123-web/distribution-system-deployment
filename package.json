@@ -1,6 +1,6 @@
 {
   "name": "software",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This unified system combines all distributed systems concepts from Tasks 1-8 using the ndk-rpc-cluster library.",
   "main": "index.js",
   "scripts": {
