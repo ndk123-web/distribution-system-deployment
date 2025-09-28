@@ -6,10 +6,12 @@ const global = new GlobalRegister({
 
 let keys = {
   TrafficControlSystem: {
-    host: "localhost", // load balancer host
+    host: "distribution-system-deployment.onrender.com", // load balancer host
     port: 3000, // load balancer port
+    protocol: "https", // http or https
+    portRequired: false, // port is required for http protocol
   },
-};
+};  
 
 global.registerKeys(keys);
 await global.start(); // start the global registry + middle server
