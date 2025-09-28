@@ -341,7 +341,7 @@
                 try {
                     this.log(`🔄 Calling ${method} with params: ${JSON.stringify(params)}`);
                     
-                    const response = await fetch(`http://localhost:${this.middlewarePort}/api/v1/middleman/middleman-send-request-to-registry`, {
+                    const response = await fetch(`https://distribution-system-deployment-1.onrender.com/api/v1/middleman/middleman-send-request-to-registry`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
