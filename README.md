@@ -5,6 +5,7 @@ This unified system combines all distributed systems concepts from Tasks 1-8 usi
 ## 🎯 Features
 
 ### Core Distributed Systems Concepts
+
 - **Traffic Signal Control** (Task 2): Deterministic signal sequencing (RED → YELLOW → GREEN)
 - **Pedestrian Control** (Task 3): Coordinated pedestrian signal management
 - **Mutual Exclusion** (Task 5): Signal and pedestrian locks to prevent race conditions
@@ -13,6 +14,7 @@ This unified system combines all distributed systems concepts from Tasks 1-8 usi
 - **Load Balancing**: Automatic failover and load distribution
 
 ### System Architecture
+
 ```
 UI (Web Interface)
     ↓ HTTP Requests
@@ -27,36 +29,49 @@ Load Balancer (Port 3000)
 
 ## 🚀 Quick Start
 
-### 1. Start the System
+### Install Below Libraries
+
+### Install dev-preview globally to preview html file
+
 ```bash
-node app.mjs
+npm install -g dev-preview
 ```
 
-This will start:
-- Global Registry (port 3331)
-- Middleware Server (port 4132) 
-- Load Balancer with 3 replicas (port 3000)
+### Install node_modules
 
-### 2. Open the UI
-Open `index.html` in your browser or use a local server:
 ```bash
-npx serve . -p 8080
+npm install
 ```
 
-### 3. Test via Command Line
+### Now Run Global Registry + Middle Server
+
 ```bash
-node client.mjs
+node registry__middle_server.mjs
+```
+
+### Now Run Load balancer
+
+```bash
+node lb.mjs
+```
+
+### Now Run The Html file
+
+```bash
+dev-preview --show index.html
 ```
 
 ## 🎮 UI Features (RD)
 
 ### Traffic Control Panel
+
 - **Automatic Mode**: Continuous signal cycling (8-second intervals)
 - **Manual Mode**: Select which road group turns GREEN
 - **Real-time Signal Display**: Visual traffic lights with colors
 - **Pedestrian Coordination**: Automatic pedestrian signal updates
 
 ### System Monitoring
+
 - **Lock Status**: Shows which process owns signal/pedestrian locks
 - **Replica Consistency**: Live view of all 3 replica states
 - **System Logs**: Real-time operation logging
@@ -67,20 +82,24 @@ node client.mjs
 All functions are load-balanced across 3 replicas:
 
 ### Core Traffic Control
+
 - `signal_controller()`: Main automatic signal control with mutual exclusion
 - `pedestrian_controller({ road })`: Update pedestrian signals for given road
 - `signal_manipulator()`: Generate random road selection (1-4)
 
 ### Manual Control
+
 - `manual({ auto, roadToGreen })`: Switch between auto/manual mode and control signals
 - `get_status()`: Get current system state, locks, and replica status
 
 ### Deadlock Demo
+
 - `trigger_deadlock()`: Demonstrate deadlock scenario with dual locks
 
 ## 🔒 Mutual Exclusion
 
 The system uses two locks:
+
 - **SIGNAL_LOCK**: Controls traffic signal changes
 - **PEDESTRIAN_LOCK**: Controls pedestrian signal changes
 
@@ -89,6 +108,7 @@ Proper lock ordering prevents deadlocks in normal operation, but the deadlock de
 ## 🔄 Replica Consistency
 
 All state changes are synchronized across 3 replicas:
+
 - Traffic signal states (s12, s34)
 - Pedestrian signal states (p12, p34)
 - Mode settings (auto/manual)
@@ -97,6 +117,7 @@ All state changes are synchronized across 3 replicas:
 ## 🚨 Deadlock Demonstration
 
 The `trigger_deadlock` function demonstrates a classic deadlock scenario:
+
 1. Process 1: Acquires SIGNAL_LOCK → tries to acquire PEDESTRIAN_LOCK
 2. Process 2: Acquires PEDESTRIAN_LOCK → tries to acquire SIGNAL_LOCK
 3. Result: Both processes wait indefinitely
@@ -104,6 +125,7 @@ The `trigger_deadlock` function demonstrates a classic deadlock scenario:
 ## 📊 Load Balancing
 
 The ndk-rpc-cluster library provides:
+
 - **3 Replica Servers**: Automatic distribution of requests
 - **Health Monitoring**: Failed replicas are bypassed
 - **Consistent State**: All replicas maintain synchronized state
@@ -119,6 +141,7 @@ The ndk-rpc-cluster library provides:
 ## 🎛️ Configuration
 
 The system is pre-configured but can be customized:
+
 - **Replica Count**: Change `replicas: 3` in `lb.mjs`
 - **Timing**: Modify signal timing intervals in the service logic
 - **Ports**: Update port configurations in respective files
@@ -128,7 +151,7 @@ The system is pre-configured but can be customized:
 
 1. **Normal Operation**: Watch automatic signal cycling
 2. **Manual Control**: Switch to manual mode and control signals
-3. **Lock Contention**: Multiple rapid requests show lock behavior  
+3. **Lock Contention**: Multiple rapid requests show lock behavior
 4. **Deadlock**: Use deadlock button to see system behavior
 5. **Replica Sync**: Watch all replicas maintain consistent state
 6. **Load Balancing**: High request volume distributes across replicas
@@ -136,9 +159,10 @@ The system is pre-configured but can be customized:
 ## 🔍 Monitoring
 
 The UI provides comprehensive monitoring:
+
 - Real-time signal states with visual indicators
 - Lock ownership and status
-- Replica consistency verification  
+- Replica consistency verification
 - System operation logs
 - Performance metrics
 
